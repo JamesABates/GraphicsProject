@@ -17,8 +17,8 @@
 struct Vertex2
 {
 	vec4 position;
+	glm::vec2 texcoord;
 	vec4 colour;
-	vec4 texcoord;
 };
 
 class ProcedualGen
@@ -29,12 +29,14 @@ public:
 
 	void CreateShaders();
 	void GenerateGrid(unsigned int rows, unsigned int cols);
+	void GeneratePerlin();
 	void PerlinNoise();
 	void Update();
 	void Draw();
 private:
 	unsigned int m_program;
 	unsigned int m_indexcount;
+	unsigned int m_perlin_texture;
 	unsigned int m_VAO;
 	unsigned int m_VBO;
 	unsigned int m_IBO;

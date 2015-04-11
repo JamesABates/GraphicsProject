@@ -4,8 +4,9 @@ ProcedualGen::ProcedualGen(FlyCamera* camera)
 {
 	m_camera = camera;
 
-	CreateShaders();
 	GenerateGrid(100, 100);
+	CreateShaders();
+	GeneratePerlin();
 }
 
 ProcedualGen::~ProcedualGen()
@@ -17,16 +18,28 @@ void ProcedualGen::CreateShaders()
 {
 	//create shaders
 	const char* vsSource = "#version 410\n \
-						   layout(location=0) in vec4 Position; \
-						   layout(location=1) in vec4 Colour; \
-						   out vec4 vColour; \
-						   uniform mat4 ProjectionView; \
-						   void main() { vColour = Colour; gl_Position = ProjectionView * Position; }";
+							layout(location=0) in vec4 position; \
+							layout(location = 1) in vec2 texcoord; \
+							uniform mat4 ProjectionView; \
+							out vec2 frag_texcoord; \
+							uniform sampler2D m_perlin_texture; \
+							void main() \
+							{ \
+								vec4 pos = position; \
+								pos.y += texture(m_perlin_texture, texcoord).r * 5; \
+								frag_texcoord = texcoord; \
+								gl_Position = ProjectionView * pos; \
+							}";
 	
 	const char* fsSource = "#version 410\n \
-						   in vec4 vColour; \
-						   out vec4 FragColor; \
-						   void main() { FragColor = vColour; }";
+							in vec2 frag_texcoord; \
+							out vec4 out_color; \
+							uniform sampler2D m_perlin_texture; \
+							void main() \
+							{ \
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr; \
+									out_color.a = 1; \
+							}";
 	
 	int success = GL_FALSE;
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -68,6 +81,7 @@ void ProcedualGen::GenerateGrid(unsigned int rows, unsigned int cols)
 		for (unsigned int c = 0; c < cols; ++c)
 		{
 			aoVertices[r * cols + c].position = vec4((float)c, 0, (float)r, 1);
+			aoVertices[r * cols + c].texcoord = glm::vec2((float)c / cols, (float)r / rows);
 
 			vec3 colour = vec3(sinf((c / (float)(cols - 1)) *
 				(r / (float)(rows - 1))));
@@ -123,6 +137,44 @@ void ProcedualGen::GenerateGrid(unsigned int rows, unsigned int cols)
 
 	delete[] auiIndices;
 	delete[] aoVertices;
+}
+
+void ProcedualGen::GeneratePerlin()
+{
+	int dims = 257;
+	float *perlin_data = new float[dims * dims];
+	float scale = (1.0f / dims) * 3;
+	int octaves = 6;
+
+	for (int x = 0; x < dims; x++)
+	{
+		for (int y = 0; y < dims; y++)
+		{
+			float amplitude = 1;
+			float persistence = 0.3;
+			perlin_data[y* dims + x] = 0;
+
+			for (int o = 0; o < octaves; o++)
+			{
+				float freq = powf(2, (float)o);
+				float perlin_sample = glm::perlin(glm::vec2((float)x, (float)y) * scale * freq) * 0.5f + 0.5f;
+
+				perlin_data[y * dims + x] += perlin_sample * amplitude;
+				amplitude *= persistence;
+			}
+		}
+	}
+
+	glGenTextures(1, &m_perlin_texture);
+	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, dims, dims, 0, GL_RED, GL_FLOAT, perlin_data);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 void ProcedualGen::Draw()

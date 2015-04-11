@@ -56,9 +56,9 @@ Application::Application()
 	Gizmos::create();
 
 	//fbObject = new FBObject(camera, window);
-	//texture = new Texture(camera);
-	//texture->CreateShader();
-	//texture->SetInputWindow(window);
+	texture = new Texture(camera);
+	texture->CreateShader();
+	texture->SetInputWindow(window);
 
 	//navTechniques = new NavTechniques(camera);
 
@@ -182,7 +182,7 @@ void Application::Update()
 	vec4 white(1);
 	vec4 black(0,0,0,1);
 
-	//texture->Update(deltaTime);
+	texture->Update(deltaTime);
 	//fbObject->Update(deltaTime);
 	//shadowMap->Update(deltaTime);
 	//navTechniques->Update();
@@ -304,7 +304,7 @@ void Application::CreateShaders()
 void Application::Draw()
 {
 	//fbObject->Draw();
-	//texture->Draw();
+	texture->Draw();
 	//shadowMap->Draw();
 	//navTechniques->Draw();
 	procedualGen->Draw();
