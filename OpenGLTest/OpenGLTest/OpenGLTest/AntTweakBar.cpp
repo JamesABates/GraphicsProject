@@ -4,6 +4,10 @@ AntTweakBar::AntTweakBar(GLFWwindow* window)
 {
 	m_window = window;
 	m_specPow = 0;
+	m_scaleMultiplier = 10;
+	m_octaves = 6;
+	m_amplitude = 1;
+	m_persistence = 0.3;
 
 	TwInit(TW_OPENGL_CORE, nullptr);
 	TwWindowSize(1280, 720);
@@ -20,7 +24,12 @@ AntTweakBar::AntTweakBar(GLFWwindow* window)
 	TwAddVarRW(m_bar, "clear colour", TW_TYPE_COLOR4F, &m_clearColour[0], "");
 	TwAddVarRW(m_bar, "light direction", TW_TYPE_DIR3F, &m_light[0], "group=light");
 	TwAddVarRW(m_bar, "light colour", TW_TYPE_COLOR3F, &m_lightColour[0], "group=light");
-	TwAddVarRW(m_bar, "spec power", TW_TYPE_FLOAT, &m_specPow, "group=light");
+	TwAddVarRW(m_bar, "spec power", TW_TYPE_FLOAT, &m_specPow, "group=light");
+	TwAddVarRW(m_bar, "Scale Multiplier", TW_TYPE_FLOAT, &m_scaleMultiplier, "group=ProGen");
+	TwAddVarRW(m_bar, "Octaves", TW_TYPE_FLOAT, &m_octaves, "group=ProGen");
+	TwAddVarRW(m_bar, "Amplitude", TW_TYPE_FLOAT, &m_amplitude, "group=ProGen");
+	TwAddVarRW(m_bar, "Persistence", TW_TYPE_FLOAT, &m_persistence, "group=ProGen");
+
 }
 
 AntTweakBar::~AntTweakBar()

@@ -118,5 +118,14 @@
     <Image Include="Content\Images\crate.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Content\Images\Grass.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Content\Images\Rock.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Content\Images\Water.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

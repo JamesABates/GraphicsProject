@@ -26,6 +26,10 @@ public:
 	glm::vec3 m_light;
 	glm::vec3 m_lightColour;
 	float m_specPow;
+	float m_scaleMultiplier;
+	float m_octaves;
+	float m_amplitude;
+	float m_persistence;
 
 private:
 	TwBar* m_bar;

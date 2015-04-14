@@ -15,7 +15,16 @@ Texture::Texture(FlyCamera* camera)
 
 	createOpenGLBuffers(m_fbxFile);
 
-	m_camera = camera;	m_emitter = new ParticleSystem();	m_emitter->initalise(1000, 500, 0.1f, 1.0f, 1, 5, 1, 0.1f, glm::vec4(1, 0, 0, 1), glm::vec4(1, 1, 0, 1));	modelX = 0;	modelY = 0;	modelZ = 0;	crouch = false;	aniNumber = Idle;
+	m_camera = camera;
+
+	m_emitter = new ParticleSystem();
+	m_emitter->initalise(1000, 500, 0.1f, 1.0f, 1, 5, 1, 0.1f, glm::vec4(1, 0, 0, 1), glm::vec4(1, 1, 0, 1));
+	modelX = 0;
+	modelY = 0;
+	modelZ = 0;
+
+	crouch = false;
+	aniNumber = Idle;
 }
 
 void Texture::CreateShader()
@@ -104,7 +113,8 @@ void Texture::createOpenGLBuffers(FBXFile* fbx)
 	{
 		FBXMeshNode* mesh = fbx->getMeshByIndex(i);
 		// storage for the opengl data in 3 unsigned int
-		unsigned int* glData = new unsigned int[3];
+		unsigned int* glData = new unsigned int[3];
+
 		glGenVertexArrays(1, &glData[0]);
 		glBindVertexArray(glData[0]);
 		glGenBuffers(1, &glData[1]);
@@ -140,37 +150,63 @@ void Texture::createOpenGLBuffers(FBXFile* fbx)
 
 void Texture::Update(float dt)
 {
-	m_timer += dt;	m_emitter->Update(dt, m_camera->GetTransform());	if (glfwGetKey(m_pWindow, GLFW_KEY_T) == GLFW_PRESS)
+	m_timer += dt;
+
+	m_emitter->Update(dt, m_camera->GetTransform());
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_T) == GLFW_PRESS)
 	{
 		glm::vec3 emitterPosition = m_emitter->GetPosition();
 		m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y, emitterPosition.z -= 1));
 		aniNumber = Run;
 		modelZ += 50;
-	}	else 	{			aniNumber = Idle; 	}	if (glfwGetKey(m_pWindow, GLFW_KEY_N) == GLFW_PRESS)
-	{		aniNumber = Crouch;	}	else { crouch = false; }	if (glfwGetKey(m_pWindow, GLFW_KEY_G) == GLFW_PRESS)
+	}
+
+	else 
+	{
+			aniNumber = Idle; 
+	}
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_N) == GLFW_PRESS)
+	{
+		aniNumber = Crouch;
+	}
+
+	else { crouch = false; }
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_G) == GLFW_PRESS)
 	{
 		glm::vec3 emitterPosition = m_emitter->GetPosition();
 		m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y, emitterPosition.z += 1));
 		modelZ -= 50;
-	}	if (glfwGetKey(m_pWindow, GLFW_KEY_F) == GLFW_PRESS)
+	}
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_F) == GLFW_PRESS)
 	{
 		glm::vec3 emitterPosition = m_emitter->GetPosition();
 		m_emitter->SetPosition(glm::vec3(emitterPosition.x -= 1, emitterPosition.y, emitterPosition.z));
 		modelX += 50;
-	}	if (glfwGetKey(m_pWindow, GLFW_KEY_H) == GLFW_PRESS)
+	}
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_H) == GLFW_PRESS)
 	{
 		glm::vec3 emitterPosition = m_emitter->GetPosition();
 		m_emitter->SetPosition(glm::vec3(emitterPosition.x += 1, emitterPosition.y, emitterPosition.z));
 		modelX -= 50;
-	}	if (glfwGetKey(m_pWindow, GLFW_KEY_R) == GLFW_PRESS)
+	}
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_R) == GLFW_PRESS)
 	{
 		glm::vec3 emitterPosition = m_emitter->GetPosition();
 		m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y -= 1, emitterPosition.z));
-	}	if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
+	}
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
 	{
 		glm::vec3 emitterPosition = m_emitter->GetPosition();
 		m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y += 1, emitterPosition.z));
-	}
+	}
+
 }
 
 void Texture::Draw()

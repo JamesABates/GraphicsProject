@@ -1,10 +1,14 @@
 #include "ProceduralGen.h"
 
-ProcedualGen::ProcedualGen(FlyCamera* camera)
+ProcedualGen::ProcedualGen(FlyCamera* camera, GLFWwindow* window, AntTweakBar* gui)
 {
+	m_gui = gui;
 	m_camera = camera;
+	m_regenereate = false;
+	m_window = window;
 
 	GenerateGrid(100, 100);
+	GenerateOpenGLBuffers();
 	CreateShaders();
 	GeneratePerlin();
 }
@@ -18,29 +22,54 @@ void ProcedualGen::CreateShaders()
 {
 	//create shaders
 	const char* vsSource = "#version 410\n \
-							layout(location=0) in vec4 position; \
-							layout(location = 1) in vec2 texcoord; \
-							uniform mat4 ProjectionView; \
-							out vec2 frag_texcoord; \
-							uniform sampler2D m_perlin_texture; \
-							void main() \
-							{ \
-								vec4 pos = position; \
-								pos.y += texture(m_perlin_texture, texcoord).r * 5; \
-								frag_texcoord = texcoord; \
-								gl_Position = ProjectionView * pos; \
-							}";
-	
+   						   layout(location=0) in vec4 position; \
+						   layout(location=1) in vec2 texcoord;\
+						   layout(location=2) in vec4 colour; \
+						   \
+						   out vec2 frag_texcoord;\
+						   out vec4 vColour; \
+						   \
+						   uniform mat4 ProjectionView; \
+						   uniform sampler2D m_perlin_texture;\
+						   uniform sampler2D m_grass_texture;\
+						   uniform sampler2D m_water_texture;\
+						   uniform sampler2D m_rocks_texture;\
+						   \
+						   void main()\
+						   {\
+								vec4 pos = position;\
+								pos.y += texture(m_perlin_texture, texcoord).r * 50;\
+								frag_texcoord = texcoord;\
+								gl_Position = ProjectionView * pos;\
+						    }";
+
 	const char* fsSource = "#version 410\n \
-							in vec2 frag_texcoord; \
-							out vec4 out_color; \
-							uniform sampler2D m_perlin_texture; \
-							void main() \
-							{ \
-									out_color = texture(m_perlin_texture, frag_texcoord).rrrr; \
-									out_color.a = 1; \
+						   	in vec2 frag_texcoord;\
+							in vec4 vColour; \
+							out vec4 out_color;\
+							uniform sampler2D m_perlin_texture;\
+							uniform sampler2D m_grass_texture;\
+							uniform sampler2D m_water_texture;\
+							uniform sampler2D m_rocks_texture;\
+							void main()\
+							{\
+								float height = texture(m_perlin_texture, frag_texcoord).r;\
+								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;\
+								out_color.a = 1;\
+								if(height <= 0.45)\
+								{\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_water_texture, frag_texcoord*2);\
+								}\
+								else if(height >= 0.45 && height <= 0.5)\
+								{\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_rocks_texture, frag_texcoord*2);\
+								}\
+								else\
+								{\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_grass_texture, frag_texcoord*2);\
+								}\
 							}";
-	
+
 	int success = GL_FALSE;
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -59,18 +88,50 @@ void ProcedualGen::CreateShaders()
 	if (success == GL_FALSE) 
 	{
 		int infoLogLength = 0;
-		glGetShaderiv(m_program, GL_INFO_LOG_LENGTH, &infoLogLength);
+		glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &infoLogLength);
 		char* infoLog = new char[infoLogLength];
-	
-		glGetShaderInfoLog(m_program, infoLogLength, 0, infoLog);
+		glGetProgramInfoLog(m_program, infoLogLength, 0, infoLog);
 		printf("Error: Failed to link shader program!\n");
 		printf("%s\n", infoLog);
-	
 		delete[] infoLog;
 	}
 	
 	glDeleteShader(fragmentShader);
 	glDeleteShader(vertexShader);
+}
+
+void ProcedualGen::GenerateOpenGLBuffers()
+{
+	data = stbi_load("./Content/Images/Grass.jpg", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+
+	glGenTextures(1, &m_grass_texture);
+	glBindTexture(GL_TEXTURE_2D, m_grass_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	stbi_image_free(data);
+
+	data = stbi_load("./Content/Images/Water.jpg", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+
+	glGenTextures(1, &m_water_texture);
+	glBindTexture(GL_TEXTURE_2D, m_water_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	stbi_image_free(data);
+
+	data = stbi_load("./Content/Images/Rock.jpg", &imageWidth, &imageHeight, &imageFormat, STBI_default);
+
+	glGenTextures(1, &m_rocks_texture);
+	glBindTexture(GL_TEXTURE_2D, m_rocks_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
 
 void ProcedualGen::GenerateGrid(unsigned int rows, unsigned int cols)
@@ -143,15 +204,15 @@ void ProcedualGen::GeneratePerlin()
 {
 	int dims = 257;
 	float *perlin_data = new float[dims * dims];
-	float scale = (1.0f / dims) * 3;
-	int octaves = 6;
+	float scale = (1.0f / dims) * m_gui->m_scaleMultiplier;
+	int octaves = m_gui->m_octaves;
 
 	for (int x = 0; x < dims; x++)
 	{
 		for (int y = 0; y < dims; y++)
 		{
-			float amplitude = 1;
-			float persistence = 0.3;
+			float amplitude = m_gui->m_amplitude;
+			float persistence = m_gui->m_persistence;
 			perlin_data[y* dims + x] = 0;
 
 			for (int o = 0; o < octaves; o++)
@@ -177,12 +238,49 @@ void ProcedualGen::GeneratePerlin()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
+void ProcedualGen::Update(float dt)
+{
+	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS && m_regenereate == false)
+	{
+		m_regenereate = true;
+		GeneratePerlin();
+	}
+
+	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_RELEASE)
+		m_regenereate = false;
+}
+
 void ProcedualGen::Draw()
 {
 
 	glUseProgram(m_program);
 	unsigned int projectionViewUniform = glGetUniformLocation(m_program, "ProjectionView");
 	glUniformMatrix4fv(projectionViewUniform, 1, false, &m_camera->GetProjectionView()[0][0]);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_grass_texture);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, m_water_texture);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_rocks_texture);
+
+	int loc = glGetUniformLocation(m_program, "m_perlin_texture");
+	glUniform1i(loc, 0);
+
+	loc = glGetUniformLocation(m_program, "m_grass_texture");
+	glUniform1i(loc, 1);
+
+	loc = glGetUniformLocation(m_program, "m_water_texture");
+	glUniform1i(loc, 2);
+
+	loc = glGetUniformLocation(m_program, "m_rocks_texture");
+	glUniform1i(loc, 3);
+
 	glBindVertexArray(m_VAO);
 	unsigned int indexCount = ((100 - 1) * (100 - 1) * 6);
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);

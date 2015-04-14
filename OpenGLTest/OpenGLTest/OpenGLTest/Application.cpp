@@ -64,7 +64,7 @@ Application::Application()
 
 	generateGrid(10, 10);
 
-	procedualGen = new ProcedualGen(camera);
+	procedualGen = new ProcedualGen(camera, window, antTweakBar);
 
 	//shadowMap = new ShadowMap(camera);
 
@@ -186,6 +186,7 @@ void Application::Update()
 	//fbObject->Update(deltaTime);
 	//shadowMap->Update(deltaTime);
 	//navTechniques->Update();
+	procedualGen->Update(deltaTime);
 	Draw();
 }
 // sizeof(float), vertex_data.data()
