@@ -124,7 +124,9 @@ void ShadowMap::CreateShaders()
 							out vec4 vNormal;\
 							out vec4 vShadowCoord;\
 							\
-							uniform mat4 ProjectionView;\							uniform mat4 LightMatrix;\							void main() \
+							uniform mat4 ProjectionView;\
+							uniform mat4 LightMatrix;\
+							void main() \
 							{\
 								vNormal = Normal;\
 								gl_Position = ProjectionView * Position;\
@@ -143,10 +145,12 @@ void ShadowMap::CreateShaders()
 							void main()	\
 							{\
 								float d = max(0, dot(normalize(vNormal.xyz), lightDir));\
-								\								if (texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z - shadowBias)\
+								\
+								if (texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z - shadowBias)\
 								{\
 									d = 0;\
-								}\								FragColour = vec4(d, d, d, 1);\
+								}\
+								FragColour = vec4(d, d, d, 1);\
 							}";
 
 	int success = GL_FALSE;

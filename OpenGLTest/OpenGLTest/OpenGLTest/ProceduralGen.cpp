@@ -63,6 +63,7 @@ void ProcedualGen::CreateShaders()
 							uniform float shadowBias; \
 							void main()\
 							{\
+								float d = max(0, dot(normalize(vNormal.xyz), lightDir)); \
 								float height = texture(m_perlin_texture, frag_texcoord).r;\
 								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;\
 								out_color.a = 1;\
