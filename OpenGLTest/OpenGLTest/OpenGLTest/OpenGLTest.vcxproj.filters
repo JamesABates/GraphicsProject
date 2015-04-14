@@ -121,10 +121,10 @@
     <Image Include="Content\Images\Grass.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Content\Images\Rock.jpg">
+    <Image Include="Content\Images\Water.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Content\Images\Water.jpg">
+    <Image Include="Content\Images\Sand.jpg">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

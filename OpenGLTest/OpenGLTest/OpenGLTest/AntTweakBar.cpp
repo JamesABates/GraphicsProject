@@ -4,9 +4,9 @@ AntTweakBar::AntTweakBar(GLFWwindow* window)
 {
 	m_window = window;
 	m_specPow = 0;
-	m_scaleMultiplier = 10;
+	m_scaleMultiplier = 2;
 	m_octaves = 6;
-	m_amplitude = 1;
+	m_amplitude = 0.6;
 	m_persistence = 0.3;
 
 	TwInit(TW_OPENGL_CORE, nullptr);

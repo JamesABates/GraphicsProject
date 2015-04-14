@@ -162,9 +162,19 @@ void Texture::Update(float dt)
 		modelZ += 50;
 	}
 
-	else 
+	else
 	{
-			aniNumber = Idle; 
+		aniNumber = Idle;
+	}
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
+	{
+		modelY -= 50;
+	}
+
+	if (glfwGetKey(m_pWindow, GLFW_KEY_U) == GLFW_PRESS)
+	{
+		modelY += 50;
 	}
 
 	if (glfwGetKey(m_pWindow, GLFW_KEY_N) == GLFW_PRESS)

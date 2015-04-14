@@ -3,12 +3,9 @@
 
 ShadowMap::ShadowMap(FlyCamera* flyCamera)
 {
-	m_fbx = new FBXFile();
-	m_fbx->load("./Content/FBX/SponzaSimple.fbx", FBXFile::UNITS_METER, true, true, true);
-
 	m_flyCamera = flyCamera;
 
-	CreateOpenGLBuffers(m_fbx);
+	//CreateOpenGLBuffers(m_fbx);
 	SetupShadowBuffer();
 	CreateShaders();
 	CreateShadowShaders();
@@ -254,16 +251,16 @@ void ShadowMap::Draw()
 	int loc = glGetUniformLocation(m_shaderProgram, "LightMatrix");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, &(m_lightMatrix[0][0]));
 
-	// draw all shadow-casting geometry
-	for (unsigned int i = 0; i < m_fbx->getMeshCount(); ++i)
-	{
-		FBXMeshNode* mesh = m_fbx->getMeshByIndex(i);
-		unsigned int* glData = (unsigned int*)mesh->m_userData;
-		glBindVertexArray(glData[0]);
-		glDrawElements(GL_TRIANGLES,
-			(unsigned int)mesh->m_indices.size(),
-			GL_UNSIGNED_INT, 0);
-	}
+	//// draw all shadow-casting geometry
+	//for (unsigned int i = 0; i < m_fbx->getMeshCount(); ++i)
+	//{
+	//	FBXMeshNode* mesh = m_fbx->getMeshByIndex(i);
+	//	unsigned int* glData = (unsigned int*)mesh->m_userData;
+	//	glBindVertexArray(glData[0]);
+	//	glDrawElements(GL_TRIANGLES,
+	//		(unsigned int)mesh->m_indices.size(),
+	//		GL_UNSIGNED_INT, 0);
+	//}
 
 	// final pass: bind back-buffer and clear colour and depth
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -300,15 +297,15 @@ void ShadowMap::Draw()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_fboDepth);
 
-	// bind our vertex array object and draw the mesh
-	for (unsigned int i = 0; i < m_fbx->getMeshCount(); ++i) {
-		FBXMeshNode* mesh = m_fbx->getMeshByIndex(i);
-		unsigned int* glData = (unsigned int*)mesh->m_userData;
-		glBindVertexArray(glData[0]);
-		glDrawElements(GL_TRIANGLES,
-			(unsigned int)mesh->m_indices.size(),
-			GL_UNSIGNED_INT, 0);
-	}
+	//// bind our vertex array object and draw the mesh
+	//for (unsigned int i = 0; i < m_fbx->getMeshCount(); ++i) {
+	//	FBXMeshNode* mesh = m_fbx->getMeshByIndex(i);
+	//	unsigned int* glData = (unsigned int*)mesh->m_userData;
+	//	glBindVertexArray(glData[0]);
+	//	glDrawElements(GL_TRIANGLES,
+	//		(unsigned int)mesh->m_indices.size(),
+	//		GL_UNSIGNED_INT, 0);
+	//}
 
 	// draw a plane under the bunny
 	glBindVertexArray(m_vao);

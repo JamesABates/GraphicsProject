@@ -36,11 +36,14 @@ public:
 	void GenerateGrid(unsigned int rows, unsigned int cols);
 	void GeneratePerlin();
 	void GenerateOpenGLBuffers();
+	void SetupShadowBuffer();
 	void PerlinNoise();
 	void Update(float dt);
 	void Draw();
 
 private:
+	unsigned int m_fbo;
+	unsigned int m_fboDepth;
 	unsigned int m_program;
 	unsigned int m_indexcount;
 	unsigned int m_perlin_texture;
@@ -53,11 +56,17 @@ private:
 	int imageHeight = 0; 
 	int imageFormat = 0;
 
+	unsigned int m_shadowFBO;
+	unsigned int m_shadowFBODepth;
+
+	glm::vec3 m_lightDirection;
+	glm::mat4 m_lightMatrix;
+
 	unsigned char* data;
 
 	unsigned int m_grass_texture;
 	unsigned int m_water_texture;
-	unsigned int m_rocks_texture;
+	unsigned int m_sand_texture;
 
 
 	GLFWwindow* m_window;

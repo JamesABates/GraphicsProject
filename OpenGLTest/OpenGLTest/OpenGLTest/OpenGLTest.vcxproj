@@ -119,7 +119,7 @@
   <ItemGroup>
     <Image Include="Content\Images\crate.png" />
     <Image Include="Content\Images\Grass.jpg" />
-    <Image Include="Content\Images\Rock.jpg" />
+    <Image Include="Content\Images\Sand.jpg" />
     <Image Include="Content\Images\Water.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
