@@ -24,6 +24,7 @@ struct Vertex2
 	vec4 position;
 	glm::vec2 texcoord;
 	vec4 colour;
+	vec4 normal;
 };
 
 class ProcedualGen
@@ -55,6 +56,10 @@ private:
 	int imageWidth = 0; 
 	int imageHeight = 0; 
 	int imageFormat = 0;
+
+	float m_lightDirX, m_lightDirY, m_lightDirZ;
+	float m_lightR, m_lightG, m_lightB;
+	float m_specPow;
 
 	unsigned int m_shadowFBO;
 	unsigned int m_shadowFBODepth;

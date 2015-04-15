@@ -7,6 +7,11 @@ ProcedualGen::ProcedualGen(FlyCamera* camera, GLFWwindow* window, AntTweakBar* g
 	m_regenereate = false;
 	m_window = window;
 
+	m_lightDirX = 0.1f;
+	m_lightDirY = 0.0f;
+	m_lightDirZ = 0.0f;
+	m_specPow = 0.0f;
+
 	GenerateGrid(256, 256);
 	GenerateOpenGLBuffers();
 	CreateShaders();
@@ -25,12 +30,14 @@ void ProcedualGen::CreateShaders()
    						   layout(location=0) in vec4 position; \
 						   layout(location=1) in vec2 texcoord;\
 						   layout(location=2) in vec4 colour; \
+						   layout(location=3) in vec4 normal; \
 						   \
 						   in vec4 Normal; \
 						   out vec2 frag_texcoord;\
 						   out vec4 vColour; \
 						   out vec4 vNormal; \
 						   out vec4 vShadowCoord; \
+						   out vec4 vPosition; \
 						   \
 						   uniform mat4 ProjectionView; \
 						   uniform mat4 LightMatrix; \
@@ -45,6 +52,8 @@ void ProcedualGen::CreateShaders()
 								pos.y += texture(m_perlin_texture, texcoord).r * 50;\
 								frag_texcoord = texcoord;\
 								gl_Position = ProjectionView * pos; \
+								vPosition = position; \
+								vNormal = normal; \
 								vShadowCoord = LightMatrix * pos; \
 						    }";
 
@@ -53,17 +62,27 @@ void ProcedualGen::CreateShaders()
 							in vec4 vColour; \
 							in vec4 vShadowCoord; \
 							in vec4 vNormal; \
+							in vec4 vPosition; \
 							out vec4 out_color;\
 							uniform sampler2D m_perlin_texture;\
 							uniform sampler2D m_grass_texture;\
 							uniform sampler2D m_water_texture;\
 							uniform sampler2D m_sand_texture;\
-							uniform vec3 lightDir; \
+							uniform vec3 LightDir; \
+							uniform vec3 LightColour; \
+							uniform vec3 CameraPos; \
+							uniform float SpecPow; \
 							uniform sampler2D shadowMap; \
 							uniform float shadowBias; \
 							void main()\
 							{\
-								float d = max(0, dot(normalize(vNormal.xyz), lightDir)); \
+								float d = max(0, dot(normalize(vNormal.xyz), -LightDir ) ); \
+								vec3 E = normalize( CameraPos - vPosition.xyz );\
+								vec3 R = reflect( -LightDir, vNormal.xyz ); \
+								float s = max( 0, dot( E, R ) ); \
+								s = pow( s, SpecPow ); \
+								FragColor = vec4( LightColour * d + LightColour * s, 1); \
+								\
 								float height = texture(m_perlin_texture, frag_texcoord).r;\
 								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;\
 								out_color.a = 1;\
@@ -271,6 +290,18 @@ void ProcedualGen::Draw()
 	glUseProgram(m_program);
 	unsigned int projectionViewUniform = glGetUniformLocation(m_program, "ProjectionView");
 	glUniformMatrix4fv(projectionViewUniform, 1, false, &m_camera->GetProjectionView()[0][0]);
+	
+	int view_proj_uniform = glGetUniformLocation(m_program, "ProjectionView");
+	int lightDirection = glGetUniformLocation(m_program, "LightDir");
+	int lightColour = glGetUniformLocation(m_program, "LightColour");
+	int cameraPos = glGetUniformLocation(m_program, "CameraPos");
+	int specPow = glGetUniformLocation(m_program, "SpecPow");
+
+	glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_camera->GetProjectionView());
+	glUniform3f(lightDirection, m_lightDirX, m_lightDirY, m_lightDirZ);
+	glUniform3f(lightColour, m_lightR, m_lightG, m_lightB);
+	//glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE,(float*)&m_camera->GetPosition());
+	glUniform1f(specPow, m_specPow);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
