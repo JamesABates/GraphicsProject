@@ -24,7 +24,10 @@ struct Vertex2
 	vec4 position;
 	glm::vec2 texcoord;
 	vec4 colour;
+<<<<<<< HEAD
 	vec3 normal;
+=======
+>>>>>>> parent of 88381de... I can't see errors
 };
 
 class ProcedualGen
@@ -59,11 +62,14 @@ private:
 	int imageHeight = 0; 
 	int imageFormat = 0;
 
+<<<<<<< HEAD
 	float m_lightDirX, m_lightDirY, m_lightDirZ;
 	float m_lightR, m_lightG, m_lightB;
 	float m_specPow;
 	float *perlin_data;
 
+=======
+>>>>>>> parent of 88381de... I can't see errors
 	unsigned int m_shadowFBO;
 	unsigned int m_shadowFBODepth;
 

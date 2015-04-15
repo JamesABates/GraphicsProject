@@ -43,8 +43,7 @@ private:
 	FlyCamera* m_camera;
 	float m_lightDirX, m_lightDirY, m_lightDirZ;
 	float m_lightR, m_lightG, m_lightB;
-	float m_specPow;
-	
+	float m_specPow;	
 	
 };
 
