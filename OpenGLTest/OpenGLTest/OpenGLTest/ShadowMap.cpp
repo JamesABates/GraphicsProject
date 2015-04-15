@@ -1,14 +1,19 @@
 
 #include "ShadowMap.h"
 
-ShadowMap::ShadowMap(FlyCamera* flyCamera)
+ShadowMap::ShadowMap(FlyCamera* flyCamera, AntTweakBar* gui)
 {
 	m_flyCamera = flyCamera;
+	m_gui = gui;
 
-	//CreateOpenGLBuffers(m_fbx);
-	SetupShadowBuffer();
+	m_fbx = new FBXFile();
+	m_fbx->load("./Content/FBX/stanford/Bunny.fbx", FBXFile::UNITS_METER, true, true, true);
+	m_fbx->initialiseOpenGLTextures();
+
+	CreateOpenGLBuffers(m_fbx);
+	//SetupShadowBuffer();
 	CreateShaders();
-	CreateShadowShaders();
+	//CreateShadowShaders();
 }
 
 ShadowMap::~ShadowMap()
@@ -117,40 +122,56 @@ void ShadowMap::SetupShadowBuffer()
 
 void ShadowMap::CreateShaders()
 {
-		const char* vsSource = "#version 410\n \
-							in vec4 Position;\
-							in vec4 Normal;\
-							\
-							out vec4 vNormal;\
-							out vec4 vShadowCoord;\
-							\
-							uniform mat4 ProjectionView;\
-							uniform mat4 LightMatrix;\
+	const char* vsSource = "#version 410\n \
+						   	layout(location=0) in vec4 Position; \
+							layout(location=1) in vec4 Normal;															\
+							layout(location=2) in vec4 Tangent;															\
+							layout(location=3) in vec2 TexCoord;														\
+																														\
+							out vec3 vPosition;																			\
+							out vec2 vTexCoord;																			\
+							out vec3 vNormal;																			\
+							out vec3 vTangent;																			\
+							out vec3 vBiTangent; \
+							out vec4 vShadowCoord; \
+							uniform mat4 ProjectionView; \
+							uniform mat4 LightMatrix; \
+							 \
 							void main() \
-							{\
-								vNormal = Normal;\
-								gl_Position = ProjectionView * Position;\
-								vShadowCoord = LightMatrix * Position;\
+							{ \
+								vec4 pos = Position; \
+								vNormal = Normal.xyz; \
+								vTexCoord = TexCoord; \
+								vTangent = Tangent.xyz; \
+								vBiTangent = cross(vNormal, vTangent); \
+								gl_Position = ProjectionView * pos; \
+								vShadowCoord = LightMatrix * Position; \
 							}";
 	
 	const char* fsSource = "#version 410\n \
-							in vec4 vNormal;\
-							in vec4 vShadowCoord;\
-							\
-							out vec4 FragColour;\
-							uniform vec3 lightDir;\
-							uniform sampler2D shadowMap;\
-							uniform float shadowBias;\
-							\
-							void main()	\
-							{\
-								float d = max(0, dot(normalize(vNormal.xyz), lightDir));\
-								\
-								if (texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z - shadowBias)\
-								{\
-									d = 0;\
-								}\
-								FragColour = vec4(d, d, d, 1);\
+						   \
+							in vec2 vTexCoord; \
+							in vec3 vNormal;  \
+							in vec3 vTangent; \
+							in vec3 vBiTangent;  \
+							in vec4 vShadowCoord;  \
+							 \
+							out vec4 FragColour; \
+							uniform vec3 lightDir; \
+							uniform sampler2D shadowMap; \
+							uniform float shadowBias; \
+							 \
+							uniform sampler2D diffuse; \
+							uniform sampler2D normal; \
+							 \
+							void main() \
+							{  \
+								float a = 0.05; \
+								mat3 TBN = mat3(normalize(vTangent), normalize(vBiTangent), normalize(vNormal)); \
+								vec3 N = texture(normal, vTexCoord).xyz * 2 - 1; \
+								float d = max( 0, dot( normalize( TBN * N ), normalize( -lightDir ))); \
+								 \
+								FragColour = texture(diffuse, vTexCoord)*vec4(d + a, d + a, d + a, 1); \
 							}";
 
 	int success = GL_FALSE;
@@ -245,38 +266,18 @@ void ShadowMap::Update(float dt)
 
 void ShadowMap::Draw()
 {
-	// shadow pass: bind our shadow map target and clear the depth
-	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-	glViewport(0, 0, 1024, 1024);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glUseProgram(m_shaderProgram);
-
-	// bind the light matrix
-	int loc = glGetUniformLocation(m_shaderProgram, "LightMatrix");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, &(m_lightMatrix[0][0]));
-
-	//// draw all shadow-casting geometry
-	//for (unsigned int i = 0; i < m_fbx->getMeshCount(); ++i)
-	//{
-	//	FBXMeshNode* mesh = m_fbx->getMeshByIndex(i);
-	//	unsigned int* glData = (unsigned int*)mesh->m_userData;
-	//	glBindVertexArray(glData[0]);
-	//	glDrawElements(GL_TRIANGLES,
-	//		(unsigned int)mesh->m_indices.size(),
-	//		GL_UNSIGNED_INT, 0);
-	//}
-
-	// final pass: bind back-buffer and clear colour and depth
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, 1920, 1080);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	////object loading-------------------------------------
 	glUseProgram(m_program);
 
-	// bind the camera
-	loc = glGetUniformLocation(m_program, "ProjectionView");
+	int lightDirection = glGetUniformLocation(m_program, "lightDir");
+	glUniform3f(lightDirection, m_gui->m_light.x, m_gui->m_light.y, m_gui->m_light.z);
+
+	//bind camera
+	int loc = glGetUniformLocation(m_program, "ProjectionView");
 	glUniformMatrix4fv(loc, 1, GL_FALSE,
 		&(m_flyCamera->GetProjectionView()[0][0]));
 
+	//bind shadowmap values
 	glm::mat4 textureSpaceOffset(
 		0.5f, 0.0f, 0.0f, 0.0f,
 		0.0f, 0.5f, 0.0f, 0.0f,
@@ -284,35 +285,36 @@ void ShadowMap::Draw()
 		0.5f, 0.5f, 0.5f, 1.0f
 		);
 
-	glm::mat4 lightMatrix = textureSpaceOffset * m_lightMatrix;
+	m_lightMatrix = textureSpaceOffset * m_lightMatrix;
 
+	//shadow and lighting for object1
 	loc = glGetUniformLocation(m_program, "LightMatrix");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, &lightMatrix[0][0]);
-
-	loc = glGetUniformLocation(m_program, "lightDir");
-	glUniform3fv(loc, 1, &m_lightDirection[0]);
-
-	loc = glGetUniformLocation(m_program, "shadowMap");
-	glUniform1i(loc, 0);
+	glUniformMatrix4fv(loc, 1, GL_FALSE, &m_lightMatrix[0][0]);
 
 	loc = glGetUniformLocation(m_program, "shadowBias");
 	glUniform1f(loc, 0.01f);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_fboDepth);
+	loc = glGetUniformLocation(m_program, "shadowMap");
+	glUniform1i(loc, 4);
 
-	//// bind our vertex array object and draw the mesh
-	//for (unsigned int i = 0; i < m_fbx->getMeshCount(); ++i) {
-	//	FBXMeshNode* mesh = m_fbx->getMeshByIndex(i);
-	//	unsigned int* glData = (unsigned int*)mesh->m_userData;
-	//	glBindVertexArray(glData[0]);
-	//	glDrawElements(GL_TRIANGLES,
-	//		(unsigned int)mesh->m_indices.size(),
-	//		GL_UNSIGNED_INT, 0);
-	//}
+	loc = glGetUniformLocation(m_program, "normal");
+	glUniform1i(loc, 5);
 
-	// draw a plane under the bunny
-	glBindVertexArray(m_vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+	loc = glGetUniformLocation(m_program, "diffuse");
+	glUniform1i(loc, 6);
+
+	// bind our vertex array object and draw the mesh
+	for (unsigned int i = 0; i < m_fbx->getMeshCount(); ++i) {
+		FBXMeshNode* mesh = m_fbx->getMeshByIndex(i);
+		unsigned int* glData = (unsigned int*)mesh->m_userData;
+
+		int m_global = glGetUniformLocation(m_program, "global");
+		glUniformMatrix4fv(m_global, 1, GL_FALSE, &(mesh->m_globalTransform)[0][0]);
+
+		glBindVertexArray(glData[0]);
+		glDrawElements(GL_TRIANGLES,
+			(unsigned int)mesh->m_indices.size(),
+			GL_UNSIGNED_INT, 0);
+	}
 
 }

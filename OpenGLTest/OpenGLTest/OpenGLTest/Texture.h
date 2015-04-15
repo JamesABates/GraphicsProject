@@ -9,6 +9,8 @@
 #include "FlyCamera.h"
 #include "FBX\FBXFile.h"
 #include "ParticleSystem.h"
+#include "AntTweak\AntTweakBar.h"
+#include "AntTweakBar.h"
 
 class FlyCamera;
 
@@ -20,10 +22,11 @@ struct Vertex
 	float nx, ny, nz, nw;
 	float tx, ty, tz, tw;
 	float s, t;
-};
+};
+
 
 public:
-	Texture(FlyCamera* camera);
+	Texture(FlyCamera* camera, AntTweakBar* gui);
 	void Update(float dt);
 	void Draw();
 	void CreateShader();
@@ -53,10 +56,12 @@ private:
 	glm::vec4 m_position;
 	ParticleSystem* m_emitter;
 	FlyCamera* m_camera;
+	AntTweakBar* m_gui;
 	FBXFile* m_fbxFile;
 	FBXAnimation* animation;
 	FBXSkeleton* skeleton;
 	GLFWwindow* m_pWindow;
+	glm::vec3 m_lightDirection;
 };
 
 #endif

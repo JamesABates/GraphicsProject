@@ -6,6 +6,8 @@
 
 #include "FBX/FBXFile.h"
 #include "FlyCamera.h"
+#include "AntTweak\AntTweakBar.h"
+#include "AntTweakBar.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -16,7 +18,7 @@
 class ShadowMap
 {
 public:
-	ShadowMap(FlyCamera* flyCamera);
+	ShadowMap(FlyCamera* flyCamera, AntTweakBar* gui);
 	~ShadowMap();
 
 	void CreateOpenGLBuffers(FBXFile* fbx);
@@ -38,6 +40,7 @@ private:
 	unsigned int m_vbo;
 	unsigned int m_ibo;
 
+	AntTweakBar* m_gui;
 	FBXFile* m_fbx;
 	FlyCamera* m_flyCamera;
 };

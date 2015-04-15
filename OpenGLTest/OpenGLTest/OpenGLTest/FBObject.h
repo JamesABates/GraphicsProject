@@ -6,6 +6,8 @@
 #include "Camera.h"
 #include "FlyCamera.h"
 #include "Texture.h"
+#include "AntTweak\AntTweakBar.h"
+#include "AntTweakBar.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -18,7 +20,7 @@ class FlyCamera;
 class FBObject
 {
 public:
-	FBObject(FlyCamera* camera, GLFWwindow* pWindow);
+	FBObject(FlyCamera* camera, GLFWwindow* pWindow, AntTweakBar* gui);
 	void Update(float dt);
 	void Draw();
 	void CreateShaders();

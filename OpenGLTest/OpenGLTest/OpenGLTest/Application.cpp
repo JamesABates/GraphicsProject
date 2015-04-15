@@ -56,7 +56,7 @@ Application::Application()
 	Gizmos::create();
 
 	//fbObject = new FBObject(camera, window);
-	texture = new Texture(camera);
+	texture = new Texture(camera, antTweakBar);
 	texture->CreateShader();
 	texture->SetInputWindow(window);
 
@@ -66,7 +66,7 @@ Application::Application()
 
 	procedualGen = new ProcedualGen(camera, window, antTweakBar);
 
-	//shadowMap = new ShadowMap(camera);
+	shadowMap = new ShadowMap(camera, antTweakBar);
 
 	//objLoader = new ObjectLoader(camera);
 
@@ -184,7 +184,7 @@ void Application::Update()
 
 	texture->Update(deltaTime);
 	//fbObject->Update(deltaTime);
-	//shadowMap->Update(deltaTime);
+	shadowMap->Update(deltaTime);
 	//navTechniques->Update();
 	procedualGen->Update(deltaTime);
 	Draw();
@@ -306,7 +306,7 @@ void Application::Draw()
 {
 	//fbObject->Draw();
 	texture->Draw();
-	//shadowMap->Draw();
+	shadowMap->Draw();
 	//navTechniques->Draw();
 	procedualGen->Draw();
 	Gizmos::draw(projection * view);

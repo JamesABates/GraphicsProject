@@ -3,11 +3,12 @@
 //#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-Texture::Texture(FlyCamera* camera)
+Texture::Texture(FlyCamera* camera, AntTweakBar* gui)
 {
 	int imageWidth = 0, imageHeight = 0, imageFormat = 0;
 	unsigned char* data;
 	m_timer = 0;
+	m_gui = gui;
 
 	m_fbxFile = new FBXFile();
 	m_fbxFile->load("./Content/FBX/pyro/pyro.fbx", FBXFile::UNITS_METER, true, true, true);
@@ -82,10 +83,11 @@ void Texture::CreateShader()
 							uniform sampler2D normal;																											\
 							void main()																															\
 							{																																	\
+								float a = 0.05; \
 								mat3 TBN = mat3(normalize( vTangent ), normalize( vBiTangent ), normalize( vNormal ));											\
 								vec3 N = texture(normal, vTexCoord).xyz * 2 - 1;																				\
 								float d = max( 0, dot( normalize( TBN * N ), normalize( -LightDir )));															\
-								FragColor = texture(diffuse, vTexCoord);																						\
+								FragColor = texture(diffuse, vTexCoord)*vec4(d+a, d+a, d+a, 1);																						\
 							}";
 
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -223,6 +225,16 @@ void Texture::Draw()
 {
 	glUseProgram(m_program);
 
+	int lightDirection = glGetUniformLocation(m_program, "LightDir");
+	int lightColour = glGetUniformLocation(m_program, "LightColour");
+	int cameraPos = glGetUniformLocation(m_program, "CameraPos");
+	int specPow = glGetUniformLocation(m_program, "SpecPow");
+
+	glUniform3f(lightDirection, m_gui->m_light.x, m_gui->m_light.y, m_gui->m_light.z);
+	glUniform3f(lightColour, m_gui->m_lightColour.r, m_gui->m_lightColour.g, m_gui->m_lightColour.b);
+	//glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE,(float*)&m_camera->GetPosition());
+	glUniform1f(specPow, m_gui->m_specPow);
+
 	// grab the skeleton and animation we want to use
 	skeleton = m_fbxFile->getSkeletonByIndex(0);
 	animation = m_fbxFile->getAnimationByIndex(0);
@@ -256,11 +268,6 @@ void Texture::Draw()
 	glUniform1i(loc, 0);
 	//loc = glGetUniformLocation(m_program, "Normal");
 	//glUniform1i(loc, 1);
-
-	// bind the light
-	vec3 light(sin(glfwGetTime()), 1, cos(glfwGetTime()));
-	loc = glGetUniformLocation(m_program, "LightDir");
-	glUniform3f(loc, light.x, light.y, light.z);
 
 	loc = glGetUniformLocation(m_program, "offset");
 	glUniform3f(loc, modelX, modelY, modelZ);
