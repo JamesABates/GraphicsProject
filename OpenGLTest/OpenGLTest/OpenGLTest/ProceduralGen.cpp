@@ -15,7 +15,7 @@ ProcedualGen::ProcedualGen(FlyCamera* camera, GLFWwindow* window, AntTweakBar* g
 	GenerateGrid(256, 256);
 	GenerateOpenGLBuffers();
 	CreateShaders();
-	GeneratePerlin();
+	Generate();
 }
 
 ProcedualGen::~ProcedualGen()
@@ -30,12 +30,12 @@ void ProcedualGen::CreateShaders()
    						   layout(location=0) in vec4 position; \
 						   layout(location=1) in vec2 texcoord;\
 						   layout(location=2) in vec4 colour; \
-						   layout(location=3) in vec4 normal; \
+						   layout(location=3) in vec3 normal; \
 						   \
-						   in vec4 Normal; \
+						   in vec3 normal; \
 						   out vec2 frag_texcoord;\
 						   out vec4 vColour; \
-						   out vec4 vNormal; \
+						   out vec3 vNormal; \
 						   out vec4 vShadowCoord; \
 						   out vec4 vPosition; \
 						   \
@@ -61,9 +61,10 @@ void ProcedualGen::CreateShaders()
 						   	in vec2 frag_texcoord;\
 							in vec4 vColour; \
 							in vec4 vShadowCoord; \
-							in vec4 vNormal; \
+							in vec3 vNormal; \
 							in vec4 vPosition; \
 							out vec4 out_color;\
+							out vec4 FragColor; \
 							uniform sampler2D m_perlin_texture;\
 							uniform sampler2D m_grass_texture;\
 							uniform sampler2D m_water_texture;\
@@ -76,20 +77,9 @@ void ProcedualGen::CreateShaders()
 							uniform float shadowBias; \
 							void main()\
 							{\
-								float d = max(0, dot(normalize(vNormal.xyz), -LightDir ) ); \
-								vec3 E = normalize( CameraPos - vPosition.xyz );\
-								vec3 R = reflect( -LightDir, vNormal.xyz ); \
-								float s = max( 0, dot( E, R ) ); \
-								s = pow( s, SpecPow ); \
-								FragColor = vec4( LightColour * d + LightColour * s, 1); \
-								\
 								float height = texture(m_perlin_texture, frag_texcoord).r;\
 								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;\
 								out_color.a = 1;\
-								if(texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z - shadowBias) \
-								{ \
-									d = 0; \
-								} \
 								if(height <= 0.45)\
 								{\
 									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_water_texture, frag_texcoord*2);\
@@ -170,7 +160,7 @@ void ProcedualGen::GenerateOpenGLBuffers()
 
 void ProcedualGen::GenerateGrid(unsigned int rows, unsigned int cols)
 {
-	Vertex2* aoVertices = new Vertex2[rows * cols];
+	aoVertices = new Vertex2[rows * cols];
 	for (unsigned int r = 0; r < rows; ++r)
 	{
 		for (unsigned int c = 0; c < cols; ++c)
@@ -184,7 +174,7 @@ void ProcedualGen::GenerateGrid(unsigned int rows, unsigned int cols)
 		}
 	}
 
-	unsigned int* auiIndices = new unsigned int[(rows - 1) * (cols - 1) * 6];
+	auiIndices = new unsigned int[(rows - 1) * (cols - 1) * 6];
 
 	unsigned int index = 0;
 	for (unsigned int r = 0; r < (rows - 1); ++r)
@@ -230,13 +220,63 @@ void ProcedualGen::GenerateGrid(unsigned int rows, unsigned int cols)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	delete[] auiIndices;
-	delete[] aoVertices;
+}
+
+void ProcedualGen::Generate()
+{
+	// Generate perlin noise terrain transform
+	unsigned int perlinData_size = 256 * 256;
+	perlin_data = new float[perlinData_size];
+
+	GeneratePerlin();
+
+	// Apply transformation
+	for (unsigned int i = 0; i < perlinData_size; ++i)
+	{
+		aoVertices[i].position.y = perlin_data[i] * 5;
+	}
+
+	unsigned int indiciesSize = (256 - 1) *
+		(256 - 1) * 6;
+	// Generate new normals
+	for (unsigned int i = 0; i < indiciesSize; i += 3)
+	{
+		Vertex2* vertex1 = &aoVertices[auiIndices[i + 2]];
+		Vertex2* vertex2 = &aoVertices[auiIndices[i + 1]];
+		Vertex2* vertex3 = &aoVertices[auiIndices[i]];
+
+		GenerateNormal(vertex1, vertex2, vertex3);
+	}
+
+	// Update GPU data
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 256 * 256 *
+		sizeof(Vertex2), aoVertices);
+
+	// Clean up
+	delete[] perlin_data;
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void ProcedualGen::GenerateNormal(Vertex2* vert1, Vertex2* vert2, Vertex2* vert3)
+{
+	//calculate face normal
+	glm::vec3 d1(vert3->position - vert1->position);
+	glm::vec3 d2(vert2->position - vert1->position);
+
+	glm::vec3 crossProduct = glm::cross(d1, d2);
+
+	glm::vec3 normal = glm::normalize(crossProduct);
+
+	vert1->normal = normal;
+	vert2->normal = normal;
+	vert3->normal = normal;
 }
 
 void ProcedualGen::GeneratePerlin()
 {
-	int dims = 257;
+	int dims = 256;
 	float *perlin_data = new float[dims * dims];
 	float scale = (1.0f / dims) * m_gui->m_scaleMultiplier;
 	int octaves = m_gui->m_octaves;
@@ -277,7 +317,7 @@ void ProcedualGen::Update(float dt)
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS && m_regenereate == false)
 	{
 		m_regenereate = true;
-		GeneratePerlin();
+		Generate();
 	}
 
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_RELEASE)
@@ -290,18 +330,6 @@ void ProcedualGen::Draw()
 	glUseProgram(m_program);
 	unsigned int projectionViewUniform = glGetUniformLocation(m_program, "ProjectionView");
 	glUniformMatrix4fv(projectionViewUniform, 1, false, &m_camera->GetProjectionView()[0][0]);
-	
-	int view_proj_uniform = glGetUniformLocation(m_program, "ProjectionView");
-	int lightDirection = glGetUniformLocation(m_program, "LightDir");
-	int lightColour = glGetUniformLocation(m_program, "LightColour");
-	int cameraPos = glGetUniformLocation(m_program, "CameraPos");
-	int specPow = glGetUniformLocation(m_program, "SpecPow");
-
-	glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_camera->GetProjectionView());
-	glUniform3f(lightDirection, m_lightDirX, m_lightDirY, m_lightDirZ);
-	glUniform3f(lightColour, m_lightR, m_lightG, m_lightB);
-	//glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE,(float*)&m_camera->GetPosition());
-	glUniform1f(specPow, m_specPow);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);

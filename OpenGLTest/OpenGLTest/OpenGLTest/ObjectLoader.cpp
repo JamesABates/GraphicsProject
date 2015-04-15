@@ -104,7 +104,8 @@ void ObjectLoader::createOpenGLBuffers(std::vector<tinyobj::shape_t>& shapes)
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
+	}
+
 }
 
 void ObjectLoader::CreateShader()
@@ -137,10 +138,23 @@ void ObjectLoader::CreateShader()
 							float s = max( 0, dot( E, R ) ); \
 							s = pow( s, SpecPow ); \
 							FragColor = vec4( LightColour * d + \
-							LightColour * s, 1); }";	int success = GL_FALSE;	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);		glShaderSource(vertexShader, 1, (const char**)&vsSource, 0);	glCompileShader(vertexShader);	glShaderSource(fragmentShader, 1, (const char**)&fsSource, 0);	glCompileShader(fragmentShader);		m_program_id = glCreateProgram();
+							LightColour * s, 1); }";
+
+	int success = GL_FALSE;
+	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	
+	glShaderSource(vertexShader, 1, (const char**)&vsSource, 0);
+	glCompileShader(vertexShader);
+	glShaderSource(fragmentShader, 1, (const char**)&fsSource, 0);
+	glCompileShader(fragmentShader);
+	
+	m_program_id = glCreateProgram();
 	glAttachShader(m_program_id, vertexShader);
 	glAttachShader(m_program_id, fragmentShader);
-	glLinkProgram(m_program_id);		glGetProgramiv(m_program_id, GL_LINK_STATUS, &success);
+	glLinkProgram(m_program_id);
+	
+	glGetProgramiv(m_program_id, GL_LINK_STATUS, &success);
 	if (success == GL_FALSE) 
 	{
 		int infoLogLength = 0;

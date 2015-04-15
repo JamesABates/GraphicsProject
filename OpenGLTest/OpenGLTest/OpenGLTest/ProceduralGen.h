@@ -24,7 +24,7 @@ struct Vertex2
 	vec4 position;
 	glm::vec2 texcoord;
 	vec4 colour;
-	vec4 normal;
+	vec3 normal;
 };
 
 class ProcedualGen
@@ -39,6 +39,8 @@ public:
 	void GenerateOpenGLBuffers();
 	void SetupShadowBuffer();
 	void PerlinNoise();
+	void Generate();
+	void GenerateNormal(Vertex2* vert1, Vertex2* vert2, Vertex2* vert3);
 	void Update(float dt);
 	void Draw();
 
@@ -60,6 +62,7 @@ private:
 	float m_lightDirX, m_lightDirY, m_lightDirZ;
 	float m_lightR, m_lightG, m_lightB;
 	float m_specPow;
+	float *perlin_data;
 
 	unsigned int m_shadowFBO;
 	unsigned int m_shadowFBODepth;
@@ -73,6 +76,8 @@ private:
 	unsigned int m_water_texture;
 	unsigned int m_sand_texture;
 
+	Vertex2* aoVertices;
+	unsigned int* auiIndices;
 
 	GLFWwindow* m_window;
 	AntTweakBar* m_gui;
