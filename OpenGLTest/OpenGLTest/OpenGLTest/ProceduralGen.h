@@ -24,10 +24,7 @@ struct Vertex2
 	vec4 position;
 	glm::vec2 texcoord;
 	vec4 colour;
-<<<<<<< HEAD
-	vec3 normal;
-=======
->>>>>>> parent of 88381de... I can't see errors
+	vec4 normal;
 };
 
 class ProcedualGen
@@ -58,18 +55,15 @@ private:
 	unsigned int m_IBO;
 	bool m_regenereate;
 
-	int imageWidth = 0; 
-	int imageHeight = 0; 
+	int imageWidth = 0;
+	int imageHeight = 0;
 	int imageFormat = 0;
 
-<<<<<<< HEAD
 	float m_lightDirX, m_lightDirY, m_lightDirZ;
 	float m_lightR, m_lightG, m_lightB;
 	float m_specPow;
 	float *perlin_data;
 
-=======
->>>>>>> parent of 88381de... I can't see errors
 	unsigned int m_shadowFBO;
 	unsigned int m_shadowFBODepth;
 
@@ -82,8 +76,8 @@ private:
 	unsigned int m_water_texture;
 	unsigned int m_sand_texture;
 
-	Vertex2* aoVertices;
-	unsigned int* auiIndices;
+	Vertex2 *aoVertices;
+	unsigned int *auiIndices;
 
 	GLFWwindow* m_window;
 	AntTweakBar* m_gui;

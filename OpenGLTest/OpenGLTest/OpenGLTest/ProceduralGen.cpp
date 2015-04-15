@@ -7,7 +7,12 @@ ProcedualGen::ProcedualGen(FlyCamera* camera, GLFWwindow* window, AntTweakBar* g
 	m_regenereate = false;
 	m_window = window;
 
-	GenerateGrid(256, 256);
+	m_lightDirX = 0.1f;
+	m_lightDirY = 0.0f;
+	m_lightDirZ = 0.0f;
+	m_specPow = 0.0f;
+
+	GenerateGrid(257, 257);
 	GenerateOpenGLBuffers();
 	CreateShaders();
 	Generate();
@@ -22,76 +27,76 @@ void ProcedualGen::CreateShaders()
 {
 	//create shaders
 	const char* vsSource = "#version 410\n \
-   						   layout(location=0) in vec4 position; \
-						   layout(location=1) in vec2 texcoord;\
-						   layout(location=2) in vec4 colour; \
-<<<<<<< HEAD
-						   layout(location=3) in vec3 normal; \
-=======
->>>>>>> parent of 88381de... I can't see errors
-						   \
-						   in vec3 normal; \
-						   out vec2 frag_texcoord;\
-						   out vec4 vColour; \
-						   out vec3 vNormal; \
-						   out vec4 vShadowCoord; \
-						   \
-						   uniform mat4 ProjectionView; \
-						   uniform mat4 LightMatrix; \
-						   uniform sampler2D m_perlin_texture;\
-						   uniform sampler2D m_grass_texture;\
-						   uniform sampler2D m_water_texture;\
-						   uniform sampler2D m_sand_texture;\
-						   \
-						   void main()\
-						   {\
-								vec4 pos = position;\
-								pos.y += texture(m_perlin_texture, texcoord).r * 50;\
-								frag_texcoord = texcoord;\
-								gl_Position = ProjectionView * pos; \
-								vShadowCoord = LightMatrix * pos; \
-						    }";
+   							layout(location=0) in vec4 position;										\
+							layout(location = 1) in vec2 texcoord;										\
+							layout(location = 2) in vec4 colour;										\
+							layout(location = 3) in vec4 normal;										\
+																										\
+							out vec2 frag_texcoord;														\
+							out vec4 vColour;															\
+							out vec4 vNormal;															\
+							out vec4 vShadowCoord;														\
+																										\
+							uniform mat4 ProjectionView;												\
+							uniform mat4 LightMatrix;													\
+																										\
+							uniform sampler2D m_perlin_texture;											\
+							uniform sampler2D m_grass_texture;											\
+							uniform sampler2D m_water_texture;											\
+							uniform sampler2D m_sand_texture;											\
+																										\
+							void main()																	\
+							{																			\
+								vNormal = normal;														\
+								vec4 pos = position;													\
+								pos.y += texture(m_perlin_texture, texcoord).r;							\
+								frag_texcoord = texcoord;												\
+								gl_Position = ProjectionView * pos;										\
+								vShadowCoord = LightMatrix * pos;										\
+							}";
 
 	const char* fsSource = "#version 410\n \
-						   	in vec2 frag_texcoord;\
-							in vec4 vColour; \
-							in vec4 vShadowCoord; \
-<<<<<<< HEAD
-							in vec3 vNormal; \
-							in vec4 vPosition; \
-=======
-							in vec4 vNormal; \
->>>>>>> parent of 88381de... I can't see errors
-							out vec4 out_color;\
-							out vec4 FragColor; \
-							uniform sampler2D m_perlin_texture;\
-							uniform sampler2D m_grass_texture;\
-							uniform sampler2D m_water_texture;\
-							uniform sampler2D m_sand_texture;\
-							uniform vec3 lightDir; \
-							uniform sampler2D shadowMap; \
-							uniform float shadowBias; \
-							void main()\
-							{\
-<<<<<<< HEAD
-=======
-								float d = max(0, dot(normalize(vNormal.xyz), lightDir)); \
->>>>>>> parent of 88381de... I can't see errors
-								float height = texture(m_perlin_texture, frag_texcoord).r;\
-								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;\
-								out_color.a = 1;\
-								if(height <= 0.45)\
-								{\
-									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_water_texture, frag_texcoord*2);\
-								}\
-								else if(height >= 0.45 && height <= 0.5)\
-								{\
-									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_sand_texture, frag_texcoord*2);\
-								}\
-								else\
-								{\
-									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_grass_texture, frag_texcoord*2);\
-								}\
+						   	in vec2 frag_texcoord;																																\
+							in vec4 vColour;																																	\
+							in vec4 vShadowCoord;																																\
+							in vec4 vNormal;																																	\
+																																												\
+							out vec4 out_color;																																	\
+																																												\
+							uniform sampler2D m_perlin_texture;																													\
+							uniform sampler2D m_grass_texture;																													\
+							uniform sampler2D m_water_texture;																													\
+							uniform sampler2D m_sand_texture;																													\
+																																												\
+							uniform vec3 lightDir;																																\
+							uniform sampler2D shadowMap;																														\
+							uniform float shadowBias;																															\
+																																												\
+							void main()																																			\
+							{																																					\
+								float d = max(0, dot(normalize(vNormal.xyz), lightDir));																						\
+								float a = 0.3;																																	\
+								float height = texture(m_perlin_texture, frag_texcoord).r;																						\
+								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;																						\
+								out_color.a = 1;																																\
+																																												\
+								if (texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z - shadowBias)																		\
+								{																																				\
+									d = 0;																																		\
+								}																																				\
+								                                                                                                                                                \
+								if (height <= 0.45) 																															\
+								{ 																																				\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_water_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1); 			\
+								} 																																				\
+								else if (height >= 0.45 && height <= 0.455) 																									\
+								{																																				\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_sand_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1);			\
+								}																																				\
+								else																																			\
+								{																																				\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_grass_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1);			\
+								}																																				\
 							}";
 
 	int success = GL_FALSE;
@@ -224,22 +229,19 @@ void ProcedualGen::GenerateGrid(unsigned int rows, unsigned int cols)
 
 void ProcedualGen::Generate()
 {
-	// Generate perlin noise terrain transform
-	unsigned int perlinData_size = 256 * 256;
-	perlin_data = new float[perlinData_size];
-
 	GeneratePerlin();
+	unsigned int perlinSize = 257*257;
 
-	// Apply transformation
-	for (unsigned int i = 0; i < perlinData_size; ++i)
+	//loop through perlin_data
+	for (unsigned int i = 0; i < perlinSize; i++)
 	{
-		aoVertices[i].position.y = perlin_data[i] * 5;
+		aoVertices[i].position.y = perlin_data[i] * 57;
 	}
 
-	unsigned int indiciesSize = (256 - 1) *
-		(256 - 1) * 6;
-	// Generate new normals
-	for (unsigned int i = 0; i < indiciesSize; i += 3)
+	//generate new normals
+	unsigned int indicesSize = (257 - 1) * (257 - 1) * 6;
+	//loop through auIndices
+	for (unsigned int i = 0; i < indicesSize; i += 3)
 	{
 		Vertex2* vertex1 = &aoVertices[auiIndices[i + 2]];
 		Vertex2* vertex2 = &aoVertices[auiIndices[i + 1]];
@@ -248,13 +250,13 @@ void ProcedualGen::Generate()
 		GenerateNormal(vertex1, vertex2, vertex3);
 	}
 
+	//Gizmos::addSphere(aoVertices[1].position.xyz, 10, 10, 10, glm::vec4(1, 0, 0, 1));
+
 	// Update GPU data
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, 256 * 256 *
-		sizeof(Vertex2), aoVertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 257 * 257 * sizeof(Vertex2), aoVertices);
 
 	// Clean up
-	delete[] perlin_data;
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -269,15 +271,15 @@ void ProcedualGen::GenerateNormal(Vertex2* vert1, Vertex2* vert2, Vertex2* vert3
 
 	glm::vec3 normal = glm::normalize(crossProduct);
 
-	vert1->normal = normal;
-	vert2->normal = normal;
-	vert3->normal = normal;
+	vert1->normal.xyz = normal.xyz;
+	vert2->normal.xyz = normal.xyz;
+	vert3->normal.xyz = normal.xyz;
 }
 
 void ProcedualGen::GeneratePerlin()
 {
-	int dims = 256;
-	float *perlin_data = new float[dims * dims];
+	int dims = 257;
+	perlin_data = new float[dims * dims];
 	float scale = (1.0f / dims) * m_gui->m_scaleMultiplier;
 	int octaves = m_gui->m_octaves;
 
@@ -377,7 +379,7 @@ void ProcedualGen::Draw()
 	glUniform1f(loc, 0.01f);
 
 	glBindVertexArray(m_VAO);
-	unsigned int indexCount = ((256 - 1) * (256 - 1) * 6);
+	unsigned int indexCount = ((257 - 1) * (257 - 1) * 6);
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
 
 }
