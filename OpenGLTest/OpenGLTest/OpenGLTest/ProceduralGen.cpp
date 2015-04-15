@@ -56,6 +56,7 @@ void ProcedualGen::CreateShaders()
 							}";
 
 	const char* fsSource = "#version 410\n \
+<<<<<<< HEAD
 						   	in vec2 frag_texcoord;																																\
 							in vec4 vColour;																																	\
 							in vec4 vShadowCoord;																																\
@@ -97,6 +98,41 @@ void ProcedualGen::CreateShaders()
 								{																																				\
 									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_grass_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1);			\
 								}																																				\
+=======
+						   	in vec2 frag_texcoord;\
+							in vec4 vColour; \
+							in vec4 vShadowCoord; \
+							in vec4 vNormal; \
+							out vec4 out_color;\
+							uniform sampler2D m_perlin_texture;\
+							uniform sampler2D m_grass_texture;\
+							uniform sampler2D m_water_texture;\
+							uniform sampler2D m_sand_texture;\
+							uniform vec3 lightDir; \
+							uniform sampler2D shadowMap; \
+							uniform float shadowBias; \
+							void main()\
+							{\
+								float height = texture(m_perlin_texture, frag_texcoord).r;\
+								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;\
+								out_color.a = 1;\
+								if(texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z - shadowBias) \
+								{ \
+									d = 0; \
+								} \
+								if(height <= 0.45)\
+								{\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_water_texture, frag_texcoord*2);\
+								}\
+								else if(height >= 0.45 && height <= 0.5)\
+								{\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_sand_texture, frag_texcoord*2);\
+								}\
+								else\
+								{\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_grass_texture, frag_texcoord*2);\
+								}\
+>>>>>>> parent of 2fd35b7... Shaders are back
 							}";
 
 	int success = GL_FALSE;
