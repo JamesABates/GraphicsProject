@@ -27,94 +27,97 @@ void ProcedualGen::CreateShaders()
 {
 	//create shaders
 	const char* vsSource = "#version 410\n \
-						      							layout(location=0) in vec4 position;										\
-																					layout(location = 1) in vec2 texcoord;										\
-																												layout(location = 2) in vec4 colour;										\
-																																			layout(location = 3) in vec4 normal;										\
-																																																													\
-																																																																				out vec2 frag_texcoord;														\
-																																																																											out vec4 vColour;															\
-																																																																																		out vec4 vNormal;															\
-																																																																																									out vec4 vShadowCoord;														\
-																																																																																																																			\
-																																																																																																																										uniform mat4 ProjectionView;												\
-																																																																																																																																	uniform mat4 LightMatrix;													\
-																																																																																																																																																											\
-																																																																																																																																																																		uniform sampler2D m_perlin_texture;											\
-																																																																																																																																																																									uniform sampler2D m_grass_texture;											\
-																																																																																																																																																																																uniform sampler2D m_water_texture;											\
-																																																																																																																																																																																							uniform sampler2D m_sand_texture;											\
-																																																																																																																																																																																																																	\
-																																																																																																																																																																																																																								void main()																	\
-																																																																																																																																																																																																																															{																			\
-																																																																																																																																																																																																																																							vNormal = normal;														\
-																																																																																																																																																																																																																																															vec4 pos = position;													\
-																																																																																																																																																																																																																																																							pos.y += texture(m_perlin_texture, texcoord).r;							\
-																																																																																																																																																																																																																																																															frag_texcoord = texcoord;												\
-																																																																																																																																																																																																																																																																							gl_Position = ProjectionView * pos;										\
-																																																																																																																																																																																																																																																																															vShadowCoord = LightMatrix * pos;										\
-																																																																																																																																																																																																																																																																																						}";
+   							layout(location=0) in vec4 position;										\
+							layout(location = 1) in vec2 texcoord;										\
+							layout(location = 2) in vec4 colour;										\
+							layout(location = 3) in vec4 normal;										\
+																										\
+							out vec2 frag_texcoord;														\
+							out vec4 vColour;															\
+							out vec4 vNormal;															\
+							out vec4 vShadowCoord;														\
+																										\
+							uniform mat4 ProjectionView;												\
+							uniform mat4 LightMatrix;													\
+																										\
+							uniform sampler2D m_perlin_texture;											\
+							uniform sampler2D m_grass_texture;											\
+							uniform sampler2D m_water_texture;											\
+							uniform sampler2D m_sand_texture;											\
+																										\
+							void main()																	\
+							{																			\
+								vNormal = normal;														\
+								vec4 pos = position;													\
+								pos.y += texture(m_perlin_texture, texcoord).r;							\
+								frag_texcoord = texcoord;												\
+								gl_Position = ProjectionView * pos;										\
+								vShadowCoord = LightMatrix * pos;										\
+							}";
 
 	const char* fsSource = "#version 410\n \
-						   						   	in vec2 frag_texcoord;																																\
-																				in vec4 vColour;																																	\
-																											in vec4 vShadowCoord;																																\
-																																		in vec4 vNormal;																																	\
-																																																																														\
-																																																																																					out vec4 out_color;																																	\
-																																																																																																																																	\
-																																																																																																																																								uniform sampler2D m_perlin_texture;																													\
-																																																																																																																																															uniform sampler2D m_grass_texture;																													\
-																																																																																																																																																						uniform sampler2D m_water_texture;																													\
-																																																																																																																																																													uniform sampler2D m_sand_texture;																													\
-																																																																																																																																																																																																									\
-																																																																																																																																																																																																																uniform vec3 lightDir;																																\
-																																																																																																																																																																																																																							uniform sampler2D shadowMap;																														\
-																																																																																																																																																																																																																														uniform float shadowBias;																															\
-																																																																																																																																																																																																																																																																										\
-																																																																																																																																																																																																																																																																																	void main()																																			\
-																																																																																																																																																																																																																																																																																								{																																					\
-																																																																																																																																																																																																																																																																																																float d = max(0, dot(normalize(vNormal.xyz), lightDir));																						\
-																																																																																																																																																																																																																																																																																																								float a = 0.3;																																	\
-																																																																																																																																																																																																																																																																																																																float height = texture(m_perlin_texture, frag_texcoord).r;																						\
-																																																																																																																																																																																																																																																																																																																								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;																						\
-																																																																																																																																																																																																																																																																																																																																out_color.a = 1;																																\
-																																																																																																																																																																																																																																																																																																																																																																												\
-																																																																																																																																																																																																																																																																																																																																																																																				if (texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z - shadowBias)																		\
-																																																																																																																																																																																																																																																																																																																																																																																												{																																				\
-																																																																																																																																																																																																																																																																																																																																																																																																					d = 0;																																		\
-																																																																																																																																																																																																																																																																																																																																																																																																													}																																				\
-																																																																																																																																																																																																																																																																																																																																																																																																																					                                                                                                                                                \
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																	if (height <= 0.45) 																															\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																									{ 																																				\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_water_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1); 			\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										} 																																				\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		else if (height >= 0.45 && height <= 0.455) 																									\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										{																																				\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_sand_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1);			\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											}																																				\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			else																																			\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											{																																				\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_grass_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1);			\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												}																																				\
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			}";
+						   	in vec2 frag_texcoord;																																\
+							in vec4 vColour;																																	\
+							in vec4 vShadowCoord;																																\
+							in vec4 vNormal;																																	\
+																																												\
+							out vec4 out_color;																																	\
+																																												\
+							uniform sampler2D m_perlin_texture;																													\
+							uniform sampler2D m_grass_texture;																													\
+							uniform sampler2D m_water_texture;																													\
+							uniform sampler2D m_sand_texture;																													\
+																																												\
+							uniform vec3 lightDir;																																\
+							uniform vec3 LightColour; \
+							uniform vec3 CameraPos; \
+							uniform float SpecPow; \
+							uniform sampler2D shadowMap;																														\
+							uniform float shadowBias;																															\
+																																												\
+							void main()																																			\
+							{																																					\
+								float d = max(0, dot(normalize(vNormal.xyz), lightDir));																						\
+								float a = 0.3;																																	\
+								float height = texture(m_perlin_texture, frag_texcoord).r;																						\
+								out_color = texture(m_perlin_texture, frag_texcoord).rrrr;																						\
+								out_color.a = 1;																																\
+																																												\
+								if (texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z - shadowBias)																		\
+								{																																				\
+									d = 0;																																		\
+								}																																				\
+								                                                                                                                                                \
+								if (height <= 0.45) 																															\
+								{ 																																				\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_water_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1); 			\
+								} 																																				\
+								else if (height >= 0.45 && height <= 0.455) 																									\
+								{																																				\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_sand_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1);			\
+								}																																				\
+								else																																			\
+								{																																				\
+									out_color = texture(m_perlin_texture, frag_texcoord).rrrr*texture(m_grass_texture, frag_texcoord * 2)*vec4(d + a, d + a, d + a, 1);			\
+								}																																				\
+							}";
 
 	int success = GL_FALSE;
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
+	
 	glShaderSource(vertexShader, 1, (const char**)&vsSource, 0);
 	glCompileShader(vertexShader);
 	glShaderSource(fragmentShader, 1, (const char**)&fsSource, 0);
 	glCompileShader(fragmentShader);
-
+	
 	m_program = glCreateProgram();
 	glAttachShader(m_program, vertexShader);
 	glAttachShader(m_program, fragmentShader);
 	glLinkProgram(m_program);
-
+	
 	glGetProgramiv(m_program, GL_LINK_STATUS, &success);
-	if (success == GL_FALSE)
+	if (success == GL_FALSE) 
 	{
 		int infoLogLength = 0;
 		glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -124,7 +127,7 @@ void ProcedualGen::CreateShaders()
 		printf("%s\n", infoLog);
 		delete[] infoLog;
 	}
-
+	
 	glDeleteShader(fragmentShader);
 	glDeleteShader(vertexShader);
 }
@@ -230,7 +233,7 @@ void ProcedualGen::GenerateGrid(unsigned int rows, unsigned int cols)
 void ProcedualGen::Generate()
 {
 	GeneratePerlin();
-	unsigned int perlinSize = 257 * 257;
+	unsigned int perlinSize = 257*257;
 
 	//loop through perlin_data
 	for (unsigned int i = 0; i < perlinSize; i++)
@@ -328,7 +331,6 @@ void ProcedualGen::Update(float dt)
 
 void ProcedualGen::Draw()
 {
-
 	glUseProgram(m_program);
 	unsigned int projectionViewUniform = glGetUniformLocation(m_program, "ProjectionView");
 	glUniformMatrix4fv(projectionViewUniform, 1, false, &m_camera->GetProjectionView()[0][0]);
