@@ -72,12 +72,15 @@ private:
 	GLFWwindow* window;
 	FlyCamera* camera;
 	Texture* texture;
+	Texture* texture2;
 	ObjectLoader* objLoader;
 	AntTweakBar* antTweakBar;
 	FBObject* fbObject;
 	ShadowMap* shadowMap;
 	NavTechniques* navTechniques;
 	ProcedualGen* procedualGen;
+	std::string pyroFBX;
+	std::string markFBX;
 
 	glm::vec3 m_positions[2];
 	glm::quat m_rotations[2];

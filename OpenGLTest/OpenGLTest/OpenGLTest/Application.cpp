@@ -55,10 +55,17 @@ Application::Application()
 
 	Gizmos::create();
 
+	pyroFBX = std::string("./Content/FBX/pyro/pyro.fbx");
+	markFBX = std::string("./Content/FBX/Marksman/Marksman.fbx");
+
 	//fbObject = new FBObject(camera, window);
-	texture = new Texture(camera, antTweakBar);
+	texture = new Texture(camera, antTweakBar, pyroFBX);
 	texture->CreateShader();
 	texture->SetInputWindow(window);
+
+	texture2 = new Texture(camera, antTweakBar, markFBX);
+	texture2->CreateShader();
+	texture2->SetInputWindow(window);
 
 	//navTechniques = new NavTechniques(camera);
 
@@ -182,7 +189,8 @@ void Application::Update()
 	vec4 white(1);
 	vec4 black(0,0,0,1);
 
-	texture->Update(deltaTime);
+	texture->Update(deltaTime, 1000, 1000, 1000);
+	texture2->Update(deltaTime, -1000, 1000, -1000);
 	//fbObject->Update(deltaTime);
 	shadowMap->Update(deltaTime);
 	//navTechniques->Update();
@@ -306,6 +314,7 @@ void Application::Draw()
 {
 	//fbObject->Draw();
 	texture->Draw();
+	texture2->Draw();
 	shadowMap->Draw();
 	//navTechniques->Draw();
 	procedualGen->Draw();

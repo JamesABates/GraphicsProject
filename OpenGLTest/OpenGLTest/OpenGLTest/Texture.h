@@ -26,8 +26,8 @@ struct Vertex
 
 
 public:
-	Texture(FlyCamera* camera, AntTweakBar* gui);
-	void Update(float dt);
+	Texture(FlyCamera* camera, AntTweakBar* gui, std::string fileName);
+	void Update(float dt, float posX, float posY, float posZ);
 	void Draw();
 	void CreateShader();
 	void createOpenGLBuffers(FBXFile* fbx);

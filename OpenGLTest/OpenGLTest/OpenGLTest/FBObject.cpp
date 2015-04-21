@@ -3,12 +3,7 @@
 
 FBObject::FBObject(FlyCamera* camera, GLFWwindow* pWindow, AntTweakBar* gui)
 {
-	m_camera = camera;
-	m_texture = new Texture(camera, gui);
-	m_texture->CreateShader();
-	m_texture->SetInputWindow(pWindow);
-	CreateFrameBuffers();
-	CreateShaders();
+
 }
 
 void FBObject::CreateFrameBuffers()
@@ -126,7 +121,6 @@ void FBObject::CreateShaders()
 
 void FBObject::Update(float dt)
 {
-	m_texture->Update(dt);
 }
 
 void FBObject::Draw()

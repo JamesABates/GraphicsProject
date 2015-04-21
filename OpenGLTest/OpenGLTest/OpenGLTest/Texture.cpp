@@ -3,15 +3,16 @@
 //#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-Texture::Texture(FlyCamera* camera, AntTweakBar* gui)
+Texture::Texture(FlyCamera* camera, AntTweakBar* gui, std::string fileName)
 {
 	int imageWidth = 0, imageHeight = 0, imageFormat = 0;
 	unsigned char* data;
+	const char* c = fileName.c_str();
 	m_timer = 0;
 	m_gui = gui;
 
 	m_fbxFile = new FBXFile();
-	m_fbxFile->load("./Content/FBX/pyro/pyro.fbx", FBXFile::UNITS_METER, true, true, true);
+	m_fbxFile->load(c, FBXFile::UNITS_METER, true, true, true);
 	m_fbxFile->initialiseOpenGLTextures();
 
 	createOpenGLBuffers(m_fbxFile);
@@ -150,74 +151,78 @@ void Texture::createOpenGLBuffers(FBXFile* fbx)
 	}
 }
 
-void Texture::Update(float dt)
+void Texture::Update(float dt, float posX, float posY, float posZ)
 {
 	m_timer += dt;
 
 	m_emitter->Update(dt, m_camera->GetTransform());
 
-	if (glfwGetKey(m_pWindow, GLFW_KEY_T) == GLFW_PRESS)
-	{
-		glm::vec3 emitterPosition = m_emitter->GetPosition();
-		m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y, emitterPosition.z -= 1));
-		aniNumber = Run;
-		modelZ += 50;
-	}
+	modelX = posX;
+	modelY = posY;
+	modelZ = posZ;
 
-	else
-	{
-		aniNumber = Idle;
-	}
-
-	if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
-	{
-		modelY -= 50;
-	}
-
-	if (glfwGetKey(m_pWindow, GLFW_KEY_U) == GLFW_PRESS)
-	{
-		modelY += 50;
-	}
-
-	if (glfwGetKey(m_pWindow, GLFW_KEY_N) == GLFW_PRESS)
-	{
-		aniNumber = Crouch;
-	}
-
-	else { crouch = false; }
-
-	if (glfwGetKey(m_pWindow, GLFW_KEY_G) == GLFW_PRESS)
-	{
-		glm::vec3 emitterPosition = m_emitter->GetPosition();
-		m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y, emitterPosition.z += 1));
-		modelZ -= 50;
-	}
-
-	if (glfwGetKey(m_pWindow, GLFW_KEY_F) == GLFW_PRESS)
-	{
-		glm::vec3 emitterPosition = m_emitter->GetPosition();
-		m_emitter->SetPosition(glm::vec3(emitterPosition.x -= 1, emitterPosition.y, emitterPosition.z));
-		modelX += 50;
-	}
-
-	if (glfwGetKey(m_pWindow, GLFW_KEY_H) == GLFW_PRESS)
-	{
-		glm::vec3 emitterPosition = m_emitter->GetPosition();
-		m_emitter->SetPosition(glm::vec3(emitterPosition.x += 1, emitterPosition.y, emitterPosition.z));
-		modelX -= 50;
-	}
-
-	if (glfwGetKey(m_pWindow, GLFW_KEY_R) == GLFW_PRESS)
-	{
-		glm::vec3 emitterPosition = m_emitter->GetPosition();
-		m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y -= 1, emitterPosition.z));
-	}
-
-	if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
-	{
-		glm::vec3 emitterPosition = m_emitter->GetPosition();
-		m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y += 1, emitterPosition.z));
-	}
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_T) == GLFW_PRESS)
+	//{
+	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
+	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y, emitterPosition.z -= 1));
+	//	aniNumber = Run;
+	//	modelZ += 50;
+	//}
+	//
+	//else
+	//{
+	//	aniNumber = Idle;
+	//}
+	//
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
+	//{
+	//	modelY -= 50;
+	//}
+	//
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_U) == GLFW_PRESS)
+	//{
+	//	modelY += 50;
+	//}
+	//
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_N) == GLFW_PRESS)
+	//{
+	//	aniNumber = Crouch;
+	//}
+	//
+	//else { crouch = false; }
+	//
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_G) == GLFW_PRESS)
+	//{
+	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
+	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y, emitterPosition.z += 1));
+	//	modelZ -= 50;
+	//}
+	//
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_F) == GLFW_PRESS)
+	//{
+	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
+	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x -= 1, emitterPosition.y, emitterPosition.z));
+	//	modelX += 50;
+	//}
+	//
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_H) == GLFW_PRESS)
+	//{
+	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
+	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x += 1, emitterPosition.y, emitterPosition.z));
+	//	modelX -= 50;
+	//}
+	//
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_R) == GLFW_PRESS)
+	//{
+	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
+	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y -= 1, emitterPosition.z));
+	//}
+	//
+	//if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
+	//{
+	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
+	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y += 1, emitterPosition.z));
+	//}
 
 }
 
