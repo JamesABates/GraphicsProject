@@ -34,6 +34,8 @@ public:
 	void Animations();
 	void SetInputWindow(GLFWwindow* pWindow) { m_pWindow = pWindow; }
 	glm::vec3 GetModelPosition() { return glm::vec3(modelX, modelY, modelZ); }
+	enum animations { Idle, TakeDmgS, DeathS, Crouch, TakeDmgC, DeathC, Shoot, ReloadS, ReloadC, Run };
+	animations aniNumber;
 protected:
 	
 private:
@@ -51,8 +53,6 @@ private:
 	int m_height;
 	int m_format;
 	bool crouch;
-	enum animations {Idle, TakeDmgS, DeathS, Crouch, TakeDmgC, DeathC, Shoot, ReloadS, ReloadC, Run};
-	animations aniNumber;
 	glm::vec4 m_position;
 	ParticleSystem* m_emitter;
 	FlyCamera* m_camera;

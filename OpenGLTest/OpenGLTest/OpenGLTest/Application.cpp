@@ -67,13 +67,21 @@ Application::Application()
 	texture2->CreateShader();
 	texture2->SetInputWindow(window);
 
+	modelX = 1000;
+	modelY = 1000;
+	modelZ = 1000;
+
+	modelX2 = -1000;
+	modelY2 = -1000;
+	modelZ2 = 1000;
+
 	//navTechniques = new NavTechniques(camera);
 
 	generateGrid(10, 10);
 
 	procedualGen = new ProcedualGen(camera, window, antTweakBar);
 
-	shadowMap = new ShadowMap(camera, antTweakBar);
+	//shadowMap = new ShadowMap(camera, antTweakBar);
 
 	//objLoader = new ObjectLoader(camera);
 
@@ -189,10 +197,12 @@ void Application::Update()
 	vec4 white(1);
 	vec4 black(0,0,0,1);
 
-	texture->Update(deltaTime, 1000, 1000, 1000);
-	texture2->Update(deltaTime, -1000, 1000, -1000);
+	Controls();
+
+	texture->Update(deltaTime, modelX, modelY, modelZ);
+	texture2->Update(deltaTime, modelX2, modelY2, modelZ2);
 	//fbObject->Update(deltaTime);
-	shadowMap->Update(deltaTime);
+	//shadowMap->Update(deltaTime);
 	//navTechniques->Update();
 	procedualGen->Update(deltaTime);
 	Draw();
@@ -315,13 +325,96 @@ void Application::Draw()
 	//fbObject->Draw();
 	texture->Draw();
 	texture2->Draw();
-	shadowMap->Draw();
+	//shadowMap->Draw();
 	//navTechniques->Draw();
 	procedualGen->Draw();
 	Gizmos::draw(projection * view);
 	Gizmos::clear();
 	antTweakBar->Draw();
 	//objLoader->Draw();
+}
+
+void Application::Controls()
+{
+
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+	{
+		texture->aniNumber = texture->Run;
+		modelZ += 50;
+	}
+
+	else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+	{
+		texture->aniNumber = texture->Run;
+		modelZ -= 50;
+	}
+
+	else
+	{
+		texture->aniNumber = texture->Idle;
+	}
+	
+	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
+	{
+		modelY -= 50;
+	}
+	
+	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+	{
+		modelY += 50;
+	}
+	
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+	{
+		texture->aniNumber = texture->Run;
+		modelX += 50;
+	}
+	
+	if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+	{
+		texture->aniNumber = texture->Run;
+		modelX -= 50;
+	}	
+
+	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+	{
+		texture2->aniNumber = texture2->Run;
+		modelZ2 += 50;
+	}
+
+	else if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+	{
+		texture2->aniNumber = texture2->Run;
+		modelZ2 -= 50;
+	}
+
+	else
+	{
+		texture2->aniNumber = texture2->Idle;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+	{
+		modelY2 -= 50;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+	{
+		modelY2 += 50;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+	{
+		texture2->aniNumber = texture2->Run;
+		modelX2 += 50;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+	{
+		texture2->aniNumber = texture2->Run;
+		modelX2 -= 50;
+	}
+
 }
 
 

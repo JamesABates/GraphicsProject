@@ -351,7 +351,7 @@ void ProcedualGen::Draw()
 	int cameraPos = glGetUniformLocation(m_program, "CameraPos");
 	int specPow = glGetUniformLocation(m_program, "SpecPow");
 
-	glUniform3f(lightDirection, m_gui->m_light.x, m_gui->m_light.y, m_gui->m_light.z);
+	glUniform3f(lightDirection, m_gui->m_light.x, -m_gui->m_light.y, m_gui->m_light.z);
 	glUniform3f(lightColour, m_gui->m_lightColour.r, m_gui->m_lightColour.g, m_gui->m_lightColour.b);
 	//glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE,(float*)&m_camera->GetPosition());
 	glUniform1f(specPow, m_gui->m_specPow);

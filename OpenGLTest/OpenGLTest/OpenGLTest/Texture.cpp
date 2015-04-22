@@ -161,68 +161,6 @@ void Texture::Update(float dt, float posX, float posY, float posZ)
 	modelY = posY;
 	modelZ = posZ;
 
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_T) == GLFW_PRESS)
-	//{
-	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
-	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y, emitterPosition.z -= 1));
-	//	aniNumber = Run;
-	//	modelZ += 50;
-	//}
-	//
-	//else
-	//{
-	//	aniNumber = Idle;
-	//}
-	//
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
-	//{
-	//	modelY -= 50;
-	//}
-	//
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_U) == GLFW_PRESS)
-	//{
-	//	modelY += 50;
-	//}
-	//
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_N) == GLFW_PRESS)
-	//{
-	//	aniNumber = Crouch;
-	//}
-	//
-	//else { crouch = false; }
-	//
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_G) == GLFW_PRESS)
-	//{
-	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
-	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y, emitterPosition.z += 1));
-	//	modelZ -= 50;
-	//}
-	//
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_F) == GLFW_PRESS)
-	//{
-	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
-	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x -= 1, emitterPosition.y, emitterPosition.z));
-	//	modelX += 50;
-	//}
-	//
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_H) == GLFW_PRESS)
-	//{
-	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
-	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x += 1, emitterPosition.y, emitterPosition.z));
-	//	modelX -= 50;
-	//}
-	//
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_R) == GLFW_PRESS)
-	//{
-	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
-	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y -= 1, emitterPosition.z));
-	//}
-	//
-	//if (glfwGetKey(m_pWindow, GLFW_KEY_Y) == GLFW_PRESS)
-	//{
-	//	glm::vec3 emitterPosition = m_emitter->GetPosition();
-	//	m_emitter->SetPosition(glm::vec3(emitterPosition.x, emitterPosition.y += 1, emitterPosition.z));
-	//}
 
 }
 
@@ -235,7 +173,7 @@ void Texture::Draw()
 	int cameraPos = glGetUniformLocation(m_program, "CameraPos");
 	int specPow = glGetUniformLocation(m_program, "SpecPow");
 
-	glUniform3f(lightDirection, m_gui->m_light.x, m_gui->m_light.y, m_gui->m_light.z);
+	glUniform3f(lightDirection, m_gui->m_light.x, -m_gui->m_light.y, m_gui->m_light.z);
 	glUniform3f(lightColour, m_gui->m_lightColour.r, m_gui->m_lightColour.g, m_gui->m_lightColour.b);
 	//glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE,(float*)&m_camera->GetPosition());
 	glUniform1f(specPow, m_gui->m_specPow);

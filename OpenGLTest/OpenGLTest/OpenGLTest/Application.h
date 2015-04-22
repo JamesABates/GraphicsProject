@@ -46,12 +46,15 @@ struct Vertex
 {
 	vec4 position;
 	vec4 colour;
-};
+};
+
+
 struct KeyFrame 
 {
 	glm::vec3 position;
 	glm::quat rotation;
-};
+};
+
 class Application
 {
 public:
@@ -64,6 +67,7 @@ public:
 	void generateGrid( unsigned int rows, unsigned int cols );
 	void OBJLoader();
 	void FBXLoader(const char* filename);
+	void Controls();
 	void CreateShaders();
 
 private:
@@ -95,6 +99,10 @@ private:
 	float currentTime;
 	float deltaTime;
 	float previousTime;
+
+	float modelX, modelY, modelZ;
+
+	float modelX2, modelY2, modelZ2;
 
 	unsigned int VAO;
 	unsigned int VBO;
